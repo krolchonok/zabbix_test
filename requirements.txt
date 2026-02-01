@@ -1,0 +1,4 @@
+pyzabbix
+requests
+beautifulsoup4
+scapy

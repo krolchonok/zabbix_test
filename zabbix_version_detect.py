@@ -1,19 +1,25 @@
+#!/usr/bin/env python3
 """
-This script is for testing zabbix version
-by version of the docs on the logon page
+Usage: zabbix_version_detect.py --zab-page http://IP/zabbix/index.php
+Detects Zabbix version by the docs link on the login page.
 """
-
-import urllib2  
+import argparse
 import re
-from bs4 import BeautifulSoup  
+import urllib.request
 
-zab_page='http://192.168.56.102/zabbix/index.php' 
-page=urllib2.urlopen(zab_page)
+from bs4 import BeautifulSoup
+
+parser = argparse.ArgumentParser(description="Detect Zabbix version from login page docs link.")
+parser.add_argument("--zab-page", required=True, help="Zabbix login page URL, e.g. http://IP/zabbix/index.php")
+args = parser.parse_args()
+
+zab_page = args.zab_page
+page = urllib.request.urlopen(zab_page)
 soup = BeautifulSoup(page, 'html.parser')
-for link in soup.findAll('a', attrs={'href': re.compile("documentation")}):
-    version=link.get('href')
+for link in soup.find_all('a', attrs={'href': re.compile("documentation")}):
+    version = link.get('href')
 
-parts=re.split('/', version)
+parts = re.split('/', version)
 
-a=''.join (parts[4:5])
-print "zabbix version is",a
+a = ''.join(parts[4:5])
+print("zabbix version is", a)
